@@ -1,0 +1,112 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: 'Outfit', sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color-scheme: dark;
+
+  /* Default Theme (Midnight) */
+  --color-primary: #d946ef;
+  --color-secondary: #8b5cf6;
+  --color-accent: #06b6d4;
+  --color-dark: #0f172a;
+  --color-dark-lighter: #1e293b;
+  --bg-gradient-1: hsla(253, 16%, 7%, 1);
+  --bg-gradient-2: hsla(225, 39%, 30%, 1);
+  --bg-gradient-3: hsla(339, 49%, 30%, 1);
+}
+
+.theme-cyberpunk {
+  --color-primary: #facc15;
+  /* Yellow */
+  --color-secondary: #ef4444;
+  /* Red */
+  --color-accent: #22d3ee;
+  /* Cyan */
+  --color-dark: #121212;
+  --color-dark-lighter: #2a2a2a;
+  --bg-gradient-1: #000000;
+  --bg-gradient-2: #3f0e40;
+  --bg-gradient-3: #b91c1c;
+}
+
+.theme-pastel {
+  --color-primary: #f9a8d4;
+  /* Pink */
+  --color-secondary: #c4b5fd;
+  /* Violet */
+  --color-accent: #67e8f9;
+  /* Cyan */
+  --color-dark: #4c1d95;
+  /* Deep Purple */
+  --color-dark-lighter: #5b21b6;
+  --bg-gradient-1: #2e1065;
+  --bg-gradient-2: #4c1d95;
+  --bg-gradient-3: #7e22ce;
+}
+
+.theme-matrix {
+  --color-primary: #22c55e;
+  /* Green */
+  --color-secondary: #16a34a;
+  --color-accent: #4ade80;
+  --color-dark: #020617;
+  --color-dark-lighter: #052e16;
+  --bg-gradient-1: #000000;
+  --bg-gradient-2: #022c22;
+  --bg-gradient-3: #064e3b;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: var(--color-dark);
+  background-image:
+    radial-gradient(at 0% 0%, var(--bg-gradient-1) 0, transparent 50%),
+    radial-gradient(at 50% 0%, var(--bg-gradient-2) 0, transparent 50%),
+    radial-gradient(at 100% 0%, var(--bg-gradient-3) 0, transparent 50%);
+  background-attachment: fixed;
+  color: #e2e8f0;
+  overflow-x: hidden;
+  transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+/* Custom Scrollbar for Anime Vibe */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+.glass-panel {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.anime-glow {
+  box-shadow: 0 0 15px rgba(217, 70, 239, 0.5);
+}
+
+.text-glow {
+  text-shadow: 0 0 10px rgba(217, 70, 239, 0.7);
+}

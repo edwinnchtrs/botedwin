@@ -1,0 +1,35 @@
+import React from 'react';
+import { Menu } from 'lucide-react';
+import botAvatar from '../assets/avatar.png';
+
+interface ChatHeaderProps {
+    onMenuClick: () => void;
+}
+
+const ChatHeader: React.FC<ChatHeaderProps> = ({ onMenuClick }) => {
+    return (
+        <div className="glass-panel border-b border-white/10 p-4 rounded-t-3xl flex items-center justify-between z-10 relative">
+            <div className="flex items-center gap-3">
+                <div className="relative">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/30 overflow-hidden">
+                        <img src={botAvatar} alt="Edwin_Chtr's" className="w-full h-full object-cover" />
+                    </div>
+                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 border-2 border-dark rounded-full"></div>
+                </div>
+                <div>
+                    <h1 className="font-bold text-lg text-white tracking-wide">Edwin_Chtr's</h1>
+                    <p className="text-xs text-accent uppercase tracking-wider font-medium">Online</p>
+                </div>
+            </div>
+
+            <button
+                onClick={onMenuClick}
+                className="p-2 hover:bg-white/5 rounded-full transition-colors text-gray-300"
+            >
+                <Menu className="w-6 h-6" />
+            </button>
+        </div>
+    );
+};
+
+export default ChatHeader;
