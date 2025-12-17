@@ -102,7 +102,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
         text: "\"Topengmu... indah. Detail retakannya sangat artistik.\"\n\nDia berhenti memutar-mutar palunya. Dia mendekatkan wajahnya.\n\n\"Kau paham? Akhirnya! Seseorang yang paham! Mereka bilang aku monster, tapi aku hanya ingin mengabadikan keindahan abadi!\"\n\nDia terlihat bersemangat.",
         choices: [
             { text: "Ceritakan lebih banyak.", nextNodeId: 'listen_story', effect: (s) => ({ trust: s.trust + 10 }) },
-            { text: "Manfaatkan kelengahannya, tendang dia!", nextNodeId: 'kick_him', effect: (s) => ({ hasWeapon: true }) }, // Lucky chance
+            { text: "Manfaatkan kelengahannya, tendang dia!", nextNodeId: 'kick_him', effect: (_) => ({ hasWeapon: true }) }, // Lucky chance
         ]
     },
     'kick_him': {
@@ -110,7 +110,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
         text: "DUAGH!\n\nKamu menendang selangkangannya sekuat tenaga! Dia mengerang kesakitan dan jatuh terduduk, menjatuhkan pisau kecil dari sakunya.\n\nKursi tempatmu terikat ikut terguling, ikatan tanganmu melonggar karena benturan!",
         bgEffect: 'heartbeat',
         choices: [
-            { text: "Ambil pisau itu dan lari!", nextNodeId: 'escape_run', effect: (s) => ({ hasWeapon: true }) },
+            { text: "Ambil pisau itu dan lari!", nextNodeId: 'escape_run', effect: (_) => ({ hasWeapon: true }) },
             { text: "Habisi dia saat dia lengah!", nextNodeId: 'kill_attempt' },
         ]
     },
@@ -155,7 +155,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
         id: 'listen_story',
         text: "Dia bercerita panjang lebar tentang filosofi 'menghentikan waktu' lewat kematian. Kamu mendengarkan dengan seksama, atau setidaknya pura-pura.\n\n\"Kau tahu... kau pendengar yang baik. Mungkin aku tidak akan membedahmu hari ini. Mau jadi asistenku?\"",
         choices: [
-            { text: "Ya, aku akan membantumu (Sumpah Palsu)", nextNodeId: 'ending_psycho_partner', effect: (s) => ({ sanity: 0 }) },
+            { text: "Ya, aku akan membantumu (Sumpah Palsu)", nextNodeId: 'ending_psycho_partner', effect: (_) => ({ sanity: 0 }) },
             { text: "Tidak sudi! Ludahi dia!", nextNodeId: 'spit_face' }
         ]
     },

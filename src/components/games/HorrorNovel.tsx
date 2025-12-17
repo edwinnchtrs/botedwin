@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, } from 'react';
 import type { GameState } from './HorrorStoryData';
 import { INITIAL_STATE, STORY_NODES } from './HorrorStoryData';
 import { Heart, Skull, RotateCcw } from 'lucide-react';
@@ -9,9 +9,6 @@ const HorrorNovel: React.FC = () => {
     const [state, setState] = useState<GameState>(INITIAL_STATE);
     const [displayedText, setDisplayedText] = useState('');
     const [isTyping, setIsTyping] = useState(false);
-
-    // SFX References (Visual only for now)
-    const containerRef = useRef<HTMLDivElement>(null);
 
     const currentNode = STORY_NODES[currentNodeId];
 
@@ -56,8 +53,6 @@ const HorrorNovel: React.FC = () => {
             default: return 'bg-transparent';
         }
     };
-
-    const isEnding = currentNodeId.startsWith('ending');
 
     return (
         <div className={`w-full h-full min-h-[60vh] flex flex-col relative overflow-hidden font-serif ${getBgClass()} transition-colors duration-500`}>
