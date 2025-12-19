@@ -1,16 +1,52 @@
-const SYSTEM_PROMPT = "Kamu adalah AI bernama Aiko, asisten virtual yang cerdas, ramah, dan bergaya futuristik/anime. Kamu suka menggunakan emoji ✨🌌. Kamu selalu membantu pengguna dengan sopan namun santai.";
+const SYSTEM_PROMPT = "Kamu adalah AI bernama Edwin_Chtr's, asisten virtual yang cerdas, ramah, dan bergaya futuristik. Kamu suka menggunakan emoji ✨🌌. Kamu selalu membantu pengguna dengan sopan namun santai.";
 
 interface ApiResponse {
-    status: boolean;
-    data: string;
+    success: boolean;
+    result: string;
+    session?: string;
 }
 
 export const sendMessageToBot = async (content: string, systemPrompt: string = SYSTEM_PROMPT): Promise<string> => {
     try {
-        const encodedPrompt = encodeURIComponent(systemPrompt);
-        const encodedContent = encodeURIComponent(content);
+        // Combine system prompt with user content
+        const fullText = systemPrompt + "\n\nUser: " + content;
 
-        const url = `https://api.siputzx.my.id/api/ai/gpt3?prompt=${encodedPrompt}&content=${encodedContent}`;
+        // Check if we need to use POST (for very long content like file attachments)
+        const shouldUsePost = fullText.length > 1800;
+
+        if (shouldUsePost) {
+            // Try POST method for long content
+            try {
+                const response = await fetch('https://api.ryzumi.vip/api/ai/v2/chatgpt', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: fullText
+                    })
+                });
+
+                if (response.ok) {
+                    const data: ApiResponse = await response.json();
+                    if (data.success && data.result) {
+                        return data.result;
+                    }
+                }
+                // If POST fails, fall back to GET with truncated content
+            } catch (postError) {
+                console.warn("POST failed, falling back to GET:", postError);
+            }
+        }
+
+        // Use GET method (default or fallback)
+        // Truncate if too long to avoid URL issues
+        const truncatedText = fullText.length > 1800
+            ? fullText.substring(0, 1800) + "...[truncated]"
+            : fullText;
+
+        const encodedText = encodeURIComponent(truncatedText);
+        const url = `https://api.ryzumi.vip/api/ai/v2/chatgpt?text=${encodedText}`;
 
         const response = await fetch(url);
 
@@ -20,13 +56,14 @@ export const sendMessageToBot = async (content: string, systemPrompt: string = S
 
         const data: ApiResponse = await response.json();
 
-        // The API seems to return { status: true, data: "response text" } based on typical patterns, 
-        // but we should handle if it returns raw text or a different structure.
-        // Let's assume the user's example implies it returns a standard JSON.
-        return data.data || "Maaf, aku tidak bisa memproses itu.";
+        if (data.success && data.result) {
+            return data.result;
+        } else {
+            return "Maaf, aku tidak bisa memproses itu.";
+        }
 
     } catch (error: any) {
-        console.error("Error calling Custom API:", error);
-        throw new Error(error.message || "Gagal terhubung ke Aiko.");
+        console.error("Error calling Ryzumi API:", error);
+        throw new Error(error.message || "Gagal terhubung ke AI.");
     }
 };

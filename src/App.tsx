@@ -234,9 +234,8 @@ function App() {
             // Sanitize text: remove newlines and extra spaces to prevent URL issues
             const cleanText = extractedText.replace(/\s+/g, ' ').trim();
 
-            // Since we reverted to GET (user preference/stability), we MUST limit context strictly.
-            // URL length limits are typically ~2000 chars total.
-            const truncatedText = cleanText.length > 800 ? cleanText.substring(0, 800) + "...[Truncated]" : cleanText;
+            // Strictly limit context to avoid URL length issues (max ~400 chars for file context)
+            const truncatedText = cleanText.length > 400 ? cleanText.substring(0, 400) + "...[Truncated due to length]" : cleanText;
 
             contextContent = ` [File Context: ${truncatedText}]`;
           }
