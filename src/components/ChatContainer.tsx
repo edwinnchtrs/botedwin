@@ -12,7 +12,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ children }) => {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
-            className="w-full max-w-md md:max-w-2xl h-[85vh] md:h-[800px] flex flex-col relative glass-panel rounded-3xl shadow-2xl overflow-hidden mx-4"
+            className="w-full md:max-w-2xl h-[100dvh] md:h-[800px] flex flex-col relative glass-panel rounded-none md:rounded-3xl shadow-2xl overflow-hidden md:mx-4"
         >
             {/* Background decoration */}
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">

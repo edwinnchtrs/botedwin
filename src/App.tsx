@@ -290,7 +290,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 md:p-6 bg-transparent relative">
+    <div className="min-h-screen flex items-center justify-center p-0 md:p-6 bg-transparent relative">
       <div className="absolute top-4 right-4 z-50 flex gap-2">
         <PersonaSelector currentPersona={currentPersona} onPersonaChange={setCurrentPersona} />
         <ThemeSwitcher currentTheme={currentTheme} onThemeChange={setCurrentTheme} />

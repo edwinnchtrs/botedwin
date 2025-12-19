@@ -22,7 +22,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, isLoading }) => {
     return (
         <form
             onSubmit={handleSubmit}
-            className="p-4 glass-panel border-t border-white/10 mt-auto rounded-b-3xl"
+            className="p-4 glass-panel border-t border-white/10 mt-auto rounded-none md:rounded-b-3xl"
         >
             <div className="relative flex items-center gap-2">
                 <input

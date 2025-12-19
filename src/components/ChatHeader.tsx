@@ -8,7 +8,7 @@ interface ChatHeaderProps {
 
 const ChatHeader: React.FC<ChatHeaderProps> = ({ onMenuClick }) => {
     return (
-        <div className="glass-panel border-b border-white/10 p-4 rounded-t-3xl flex items-center justify-between z-10 relative">
+        <div className="glass-panel border-b border-white/10 p-4 rounded-none md:rounded-t-3xl flex items-center justify-between z-10 relative">
             <div className="flex items-center gap-3">
                 <div className="relative">
                     <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/30 overflow-hidden">
