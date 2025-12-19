@@ -8,7 +8,11 @@ import { motion } from 'framer-motion';
 import basementBg from '../../assets/games/horror/basement.png';
 import sculptorImg from '../../assets/games/horror/sculptor.png';
 
-const HorrorNovel: React.FC = () => {
+interface HorrorNovelProps {
+    onBack?: () => void;
+}
+
+const HorrorNovel: React.FC<HorrorNovelProps> = ({ onBack }) => {
     const [currentNodeId, setCurrentNodeId] = useState<string>('start');
     const [state, setState] = useState<GameState>(INITIAL_STATE);
     const [displayedText, setDisplayedText] = useState('');

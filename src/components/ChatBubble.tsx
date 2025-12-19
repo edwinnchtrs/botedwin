@@ -9,6 +9,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import CodePreview from './CodePreview';
 import MusicCard from './MusicCard';
+import MediaCard from './MediaCard';
 
 interface ChatBubbleProps {
     message: Message;
@@ -111,10 +112,17 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
                     )}
                 </div>
 
-                {/* Music Card */}
+                {/* Music Card (Legacy) */}
                 {message.musicData && (
                     <div className="mt-2 w-full max-w-sm">
                         <MusicCard data={message.musicData} />
+                    </div>
+                )}
+
+                {/* Enhanced Media Card */}
+                {message.mediaData && (
+                    <div className="mt-2 w-full">
+                        <MediaCard data={message.mediaData} />
                     </div>
                 )}
 

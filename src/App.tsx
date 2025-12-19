@@ -17,7 +17,7 @@ import InsomniaGame from './components/games/InsomniaGame';
 import type { Message, ChatSession } from './types';
 import botAvatar from './assets/avatar.png';
 import { sendMessageToBot } from './services/customApi';
-import { fetchMusicData } from './services/downloader';
+import { fetchMediaData } from './services/mediaDownloader';
 import { generateImage } from './services/imageGenerator';
 import { extractTextFromPDF } from './services/pdfParser';
 import { extractTextFromImage } from './services/ocrService';
@@ -252,21 +252,44 @@ function App() {
         }
       }
 
-      // Check for Music Link (YouTube or Spotify)
-      const musicRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|open\.spotify\.com\/track\/)([\w-]+)/;
-      const musicMatch = text.match(musicRegex);
+      // Check for Media Link (YouTube, Instagram, TikTok, Spotify)
+      // Check for Media Link (YouTube, Instagram, TikTok, Spotify)
+      const mediaRegex = /(?:https?:\/\/)?(?:www\.)?(youtube\.com\/watch\?v=|youtu\.be\/|instagram\.com\/p\/|instagram\.com\/reel\/|tiktok\.com\/|vm\.tiktok\.com\/|vt\.tiktok\.com\/|open\.spotify\.com\/track\/)([^\s]+)/;
+      const mediaMatch = text.match(mediaRegex);
 
-      if (musicMatch) {
-        const musicData = await fetchMusicData(text);
-        if (musicData) {
-          const botMessage: Message = {
+      if (mediaMatch) {
+        try {
+          const mediaUrl = mediaMatch[0].startsWith('http') ? mediaMatch[0] : `https://${mediaMatch[0]}`;
+          const mediaData = await fetchMediaData(mediaUrl);
+
+          if (mediaData) {
+            const platformLabels = {
+              youtube: '🎥 Video YouTube',
+              instagram: '📸 Media Instagram',
+              tiktok: '🎬 Video TikTok',
+              spotify: '🎵 Lagu Spotify'
+            };
+            const label = platformLabels[mediaData.platform] || 'Media';
+            const botMessage: Message = {
+              id: Date.now() + 1,
+              sender: 'bot',
+              text: `Ditemukan ${label}: **${mediaData.title}**`,
+              timestamp: Date.now(),
+              mediaData: mediaData
+            };
+            setMessages((prev) => [...prev, botMessage]);
+            setIsTyping(false);
+            return;
+          }
+        } catch (error) {
+          console.error('Media fetch error:', error);
+          const errorMessage: Message = {
             id: Date.now() + 1,
             sender: 'bot',
-            text: `Ditemukan lagu: **${musicData.title}**`,
-            timestamp: Date.now(),
-            musicData: musicData
+            text: `⚠️ **Gagal mengunduh media.**\n\nSepertinya ada masalah saat mengambil data dari link tersebut. Pastikan link bersifat publik dan tidak dihapus.\n\n_Error: ${(error as Error).message}_`,
+            timestamp: Date.now()
           };
-          setMessages((prev) => [...prev, botMessage]);
+          setMessages((prev) => [...prev, errorMessage]);
           setIsTyping(false);
           return;
         }
@@ -356,11 +379,12 @@ function App() {
           activeGame === 'tictactoe' ? 'Tic-Tac-Toe' :
             activeGame === 'rps' ? 'Rock Paper Scissors' :
               activeGame === 'minibattles' ? '12 MiniBattles' :
-                'The Basement (Psychopath Story)'
+                activeGame === 'insomnia' ? 'Insomnia' :
+                  'The Basement (Psychopath Story)'
         }
       >
-        {activeGame === 'tictactoe' && <TicTacToe />}
-        {activeGame === 'rps' && <RockPaperScissors />}
+        {activeGame === 'tictactoe' && <TicTacToe onBack={() => setActiveGame(null)} />}
+        {activeGame === 'rps' && <RockPaperScissors onBack={() => setActiveGame(null)} />}
         {activeGame === 'minibattles' && (
           <div className="w-full h-full min-h-[85vh] flex items-center justify-center bg-black/50 rounded-xl overflow-hidden">
             <iframe
@@ -372,7 +396,7 @@ function App() {
             ></iframe>
           </div>
         )}
-        {activeGame === 'novel_horror' && <HorrorNovel />}
+        {activeGame === 'novel_horror' && <HorrorNovel onBack={() => setActiveGame(null)} />}
         {activeGame === 'insomnia' && <InsomniaGame />}
       </GameModal>
 

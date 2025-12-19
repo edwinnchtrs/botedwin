@@ -1,3 +1,5 @@
+import type { MediaData } from '../services/mediaDownloader';
+
 export type Message = {
     id: number;
     sender: 'user' | 'bot';
@@ -10,6 +12,7 @@ export type Message = {
         thumbnail: string;
         url: string;
     };
+    mediaData?: MediaData; // Enhanced media with multi-quality downloads
     imageUrl?: string;
 };
 
