@@ -25,8 +25,8 @@ export const sendMessageToBot = async (content: string, systemPrompt: string = S
         // Let's assume the user's example implies it returns a standard JSON.
         return data.data || "Maaf, aku tidak bisa memproses itu.";
 
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error calling Custom API:", error);
-        throw new Error("Gagal terhubung ke Aiko.");
+        throw new Error(error.message || "Gagal terhubung ke Aiko.");
     }
 };

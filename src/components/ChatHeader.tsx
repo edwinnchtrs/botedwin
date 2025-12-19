@@ -1,15 +1,25 @@
 import React from 'react';
-import { Menu } from 'lucide-react';
+import { Menu, Volume2, VolumeX } from 'lucide-react';
 import botAvatar from '../assets/avatar.png';
 
 interface ChatHeaderProps {
     onMenuClick: () => void;
+    isMuted?: boolean;
+    onToggleMute?: () => void;
 }
 
-const ChatHeader: React.FC<ChatHeaderProps> = ({ onMenuClick }) => {
+const ChatHeader: React.FC<ChatHeaderProps> = ({ onMenuClick, isMuted = false, onToggleMute }) => {
     return (
         <div className="glass-panel border-b border-white/10 p-4 rounded-none md:rounded-t-3xl flex items-center justify-between z-10 relative">
             <div className="flex items-center gap-3">
+                {onToggleMute && (
+                    <button
+                        onClick={onToggleMute}
+                        className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-colors"
+                    >
+                        {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+                    </button>
+                )}
                 <div className="relative">
                     <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/30 overflow-hidden">
                         <img src={botAvatar} alt="Edwin_Chtr's" className="w-full h-full object-cover" />

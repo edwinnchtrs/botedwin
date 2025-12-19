@@ -19,9 +19,13 @@ import botAvatar from './assets/avatar.png';
 import { sendMessageToBot } from './services/customApi';
 import { fetchMusicData } from './services/downloader';
 import { generateImage } from './services/imageGenerator';
+import { extractTextFromPDF } from './services/pdfParser';
+import { extractTextFromImage } from './services/ocrService';
+import { speakText, stopSpeaking } from './services/voiceService';
 
 function App() {
   // Chat History Management
+  const [isMuted, setIsMuted] = useState(false);
   const [sessions, setSessions] = useState<ChatSession[]>(() => {
     const saved = localStorage.getItem('chat_sessions');
     return saved ? JSON.parse(saved) : [];
@@ -205,11 +209,11 @@ function App() {
     }
   }, [currentTheme]);
 
-  const handleSendMessage = async (text: string) => {
+  const handleSendMessage = async (text: string, file?: File) => {
     const newUserMessage: Message = {
       id: Date.now(),
       sender: 'user',
-      text,
+      text: file ? `[Attached: ${file.name}] ${text}` : text,
       timestamp: Date.now(),
     };
 
@@ -217,6 +221,38 @@ function App() {
     setIsTyping(true);
 
     try {
+      let contextContent = "";
+      if (file) {
+        try {
+          let extractedText = "";
+          if (file.type === 'application/pdf') {
+            extractedText = await extractTextFromPDF(file);
+          } else if (file.type.startsWith('image/')) {
+            extractedText = await extractTextFromImage(file);
+          }
+          if (extractedText) {
+            // Sanitize text: remove newlines and extra spaces to prevent URL issues
+            const cleanText = extractedText.replace(/\s+/g, ' ').trim();
+
+            // Since we reverted to GET (user preference/stability), we MUST limit context strictly.
+            // URL length limits are typically ~2000 chars total.
+            const truncatedText = cleanText.length > 800 ? cleanText.substring(0, 800) + "...[Truncated]" : cleanText;
+
+            contextContent = ` [File Context: ${truncatedText}]`;
+          }
+        } catch (e) {
+          console.error("File reading error:", e);
+          setMessages(prev => [...prev, {
+            id: Date.now(),
+            sender: 'bot',
+            text: "Failed to read the attached file. Please ensure it is a valid document or image.",
+            timestamp: Date.now()
+          }]);
+          setIsTyping(false);
+          return;
+        }
+      }
+
       // Check for Music Link (YouTube or Spotify)
       const musicRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|open\.spotify\.com\/track\/)([\w-]+)/;
       const musicMatch = text.match(musicRegex);
@@ -265,7 +301,9 @@ function App() {
         best_friend: "Woy! Kamu adalah sahabat pengguna. Pake bahasa gaul, santai abis, lelucon, dan banyak emoji 😎🔥. Jangan kaku!",
       };
 
-      const responseText = await sendMessageToBot(text, systemPrompts[currentPersona]);
+      const fullSystemPrompt = systemPrompts[currentPersona] + (contextContent ? contextContent : "");
+
+      const responseText = await sendMessageToBot(text, fullSystemPrompt);
 
       const newBotMessage: Message = {
         id: Date.now() + 1,
@@ -275,12 +313,13 @@ function App() {
       };
 
       setMessages((prev) => [...prev, newBotMessage]);
-    } catch (error) {
-      console.error(error);
+      speakText(responseText, isMuted);
+    } catch (error: any) {
+      console.error("Main Loop Error:", error);
       const errorMessage: Message = {
         id: Date.now() + 1,
         sender: 'bot',
-        text: "Maaf, aku sedang tidak bisa terhubung. Coba lagi nanti ya! 😓",
+        text: `Maaf, aku sedang tidak bisa terhubung. Eror: ${error.message || 'Unknown error'}`,
         timestamp: Date.now(),
       };
       setMessages((prev) => [...prev, errorMessage]);
@@ -339,7 +378,15 @@ function App() {
       </GameModal>
 
       <ChatContainer>
-        <ChatHeader onMenuClick={() => setIsSidebarOpen(true)} />
+        <ChatHeader
+          onMenuClick={() => setIsSidebarOpen(true)}
+          isMuted={isMuted}
+          onToggleMute={() => {
+            const newState = !isMuted;
+            setIsMuted(newState);
+            if (newState) stopSpeaking();
+          }}
+        />
 
         {/* Messages Area */}
         <div className="flex-1 overflow-y-auto p-4 custom-scrollbar space-y-4">
