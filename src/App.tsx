@@ -379,12 +379,11 @@ function App() {
           activeGame === 'tictactoe' ? 'Tic-Tac-Toe' :
             activeGame === 'rps' ? 'Rock Paper Scissors' :
               activeGame === 'minibattles' ? '12 MiniBattles' :
-                activeGame === 'insomnia' ? 'Insomnia' :
-                  'The Basement (Psychopath Story)'
+                'The Basement (Psychopath Story)'
         }
       >
-        {activeGame === 'tictactoe' && <TicTacToe onBack={() => setActiveGame(null)} />}
-        {activeGame === 'rps' && <RockPaperScissors onBack={() => setActiveGame(null)} />}
+        {activeGame === 'tictactoe' && <TicTacToe />}
+        {activeGame === 'rps' && <RockPaperScissors />}
         {activeGame === 'minibattles' && (
           <div className="w-full h-full min-h-[85vh] flex items-center justify-center bg-black/50 rounded-xl overflow-hidden">
             <iframe
@@ -396,7 +395,7 @@ function App() {
             ></iframe>
           </div>
         )}
-        {activeGame === 'novel_horror' && <HorrorNovel onBack={() => setActiveGame(null)} />}
+        {activeGame === 'novel_horror' && <HorrorNovel />}
         {activeGame === 'insomnia' && <InsomniaGame />}
       </GameModal>
 

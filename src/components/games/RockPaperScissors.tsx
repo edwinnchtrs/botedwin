@@ -1,9 +1,5 @@
 import React, { useState } from 'react';
-import { Hand, Scissors, Square, RefreshCw, ArrowLeft } from 'lucide-react';
-
-interface RPSProps {
-    onBack?: () => void;
-}
+import { RefreshCw } from 'lucide-react';
 
 type Choice = 'rock' | 'paper' | 'scissors';
 
@@ -13,14 +9,14 @@ const choices: { id: Choice; icon: string; beats: Choice }[] = [
     { id: 'scissors', icon: '✌️', beats: 'paper' },
 ];
 
-const RockPaperScissors: React.FC<RPSProps> = ({ onBack }) => {
-    const [playerChoice, setPlayerChoice] = useState<string | null>(null);
+const RockPaperScissors: React.FC = () => {
+    const [userChoice, setUserChoice] = useState<Choice | null>(null);
     const [computerChoice, setComputerChoice] = useState<Choice | null>(null);
     const [result, setResult] = useState<string | null>(null);
     const [streak, setStreak] = useState(0);
 
     const playGame = (choice: Choice) => {
-        setPlayerChoice(choice);
+        setUserChoice(choice);
 
         // Random AI choice
         const randomChoice = choices[Math.floor(Math.random() * choices.length)];
@@ -38,30 +34,19 @@ const RockPaperScissors: React.FC<RPSProps> = ({ onBack }) => {
     };
 
     const reset = () => {
-        setPlayerChoice(null);
+        setUserChoice(null);
         setComputerChoice(null);
         setResult(null);
     };
 
     return (
-        <div className="flex flex-col items-center justify-center p-4 w-full">
-            <div className="flex items-center gap-4 mb-8">
-                {onBack && (
-                    <button onClick={onBack} className="p-2 hover:bg-gray-700 rounded-full transition-colors">
-                        <ArrowLeft className="w-6 h-6 text-white" />
-                    </button>
-                )}
-                <h2 className="text-2xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-red-500">
-                    Rock Paper Scissors
-                </h2>
-            </div>
-
+        <div className="flex flex-col items-center gap-8 w-full">
             <div className="text-center">
                 <div className="text-sm text-gray-400 mb-1">Win Streak</div>
                 <div className="text-2xl font-bold text-primary">{streak}🔥</div>
             </div>
 
-            {!playerChoice ? (
+            {!userChoice ? (
                 <div className="grid grid-cols-3 gap-4">
                     {choices.map((choice) => (
                         <button

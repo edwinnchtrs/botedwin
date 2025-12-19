@@ -25,10 +25,10 @@ const GameModal: React.FC<GameModalProps> = ({ isOpen, onClose, title, children 
                         initial={{ opacity: 0, scale: 0.9, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                        className="relative bg-dark-lighter border border-white/10 rounded-2xl w-full max-w-4xl shadow-2xl p-6 overflow-hidden max-h-[90vh] flex flex-col"
+                        className="relative bg-dark-lighter border border-white/10 rounded-2xl w-full max-w-[95vw] shadow-2xl p-6"
                     >
-                        <div className="flex items-center justify-between mb-6 flex-shrink-0">
-                            <h2 className="text-xl font-bold text-white bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-purple-500">
+                        <div className="flex items-center justify-between mb-6">
+                            <h2 className="text-xl font-bold text-white bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
                                 {title}
                             </h2>
                             <button
@@ -39,7 +39,7 @@ const GameModal: React.FC<GameModalProps> = ({ isOpen, onClose, title, children 
                             </button>
                         </div>
 
-                        <div className="flex-1 overflow-auto custom-scrollbar relative">
+                        <div className="min-h-[300px] flex flex-col items-center justify-center">
                             {children}
                         </div>
                     </motion.div>

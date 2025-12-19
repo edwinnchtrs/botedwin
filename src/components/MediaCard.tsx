@@ -119,38 +119,44 @@ const MediaCard: React.FC<MediaCardProps> = ({ data }) => {
             {/* Download Options */}
             <div className="p-4 space-y-3">
                 <div className="text-sm text-gray-400 font-medium">Download Options:</div>
-                <div className="grid gap-2">
-                    {data.downloads.map((download, index) => (
-                        <a
-                            key={index}
-                            href={download.url}
-                            onClick={(e) => handleDownload(e, download.url, `${data.title}.${download.type === 'video' ? 'mp4' : 'mp3'}`)}
-                            className={`flex items-center justify-between gap-2 ${download.type === 'video'
+                {data.downloads && data.downloads.length > 0 ? (
+                    <div className="grid gap-2">
+                        {data.downloads.map((download, index) => (
+                            <a
+                                key={index}
+                                href={download.url}
+                                onClick={(e) => handleDownload(e, download.url, `${data.title}.${download.type === 'video' ? 'mp4' : 'mp3'}`)}
+                                className={`flex items-center justify-between gap-2 ${download.type === 'video'
                                     ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700'
                                     : 'bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700'
-                                } text-white py-2.5 px-4 rounded-lg font-medium transition-all text-sm shadow-lg group cursor-pointer ${downloadingUrl === download.url ? 'opacity-75 cursor-wait' : ''}`}
-                        >
-                            <div className="flex items-center gap-2">
-                                {download.type === 'video' ? (
-                                    <Video className="w-4 h-4" />
-                                ) : (
-                                    <Music className="w-4 h-4" />
-                                )}
-                                <span className="capitalize">{download.type}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full">
-                                    {download.quality}
-                                </span>
-                                {downloadingUrl === download.url ? (
-                                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                ) : (
-                                    <Download className="w-4 h-4 group-hover:animate-bounce" />
-                                )}
-                            </div>
-                        </a>
-                    ))}
-                </div>
+                                    } text-white py-2.5 px-4 rounded-lg font-medium transition-all text-sm shadow-lg group cursor-pointer ${downloadingUrl === download.url ? 'opacity-75 cursor-wait' : ''}`}
+                            >
+                                <div className="flex items-center gap-2">
+                                    {download.type === 'video' ? (
+                                        <Video className="w-4 h-4" />
+                                    ) : (
+                                        <Music className="w-4 h-4" />
+                                    )}
+                                    <span className="capitalize">{download.type}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full">
+                                        {download.quality}
+                                    </span>
+                                    {downloadingUrl === download.url ? (
+                                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    ) : (
+                                        <Download className="w-4 h-4 group-hover:animate-bounce" />
+                                    )}
+                                </div>
+                            </a>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="text-center text-gray-500 text-sm py-4">
+                        No download links available
+                    </div>
+                )}
 
                 {/* Preview Audio for audio-only platforms */}
                 {data.platform === 'spotify' && data.downloads[0]?.type === 'audio' && (

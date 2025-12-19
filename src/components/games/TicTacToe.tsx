@@ -1,13 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { RefreshCw, ArrowLeft } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 
 type Player = 'X' | 'O' | null;
 
-interface TicTacToeProps {
-    onBack?: () => void;
-}
-
-const TicTacToe: React.FC<TicTacToeProps> = ({ onBack }) => {
+const TicTacToe: React.FC = () => {
     const [board, setBoard] = useState<Player[]>(Array(9).fill(null));
     const [isXNext, setIsXNext] = useState(true);
     const [winner, setWinner] = useState<Player | 'Draw' | null>(null);
@@ -62,27 +58,17 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ onBack }) => {
     };
 
     return (
-        <div className="flex flex-col items-center justify-center p-4">
-            <div className="flex items-center gap-4 mb-6">
-                {onBack && (
-                    <button onClick={onBack} className="p-2 hover:bg-gray-700 rounded-full transition-colors">
-                        <ArrowLeft className="w-6 h-6 text-white" />
-                    </button>
-                )}
-                <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">
-                    Tic Tac Toe
-                </h2>
-            </div>
+        <div className="flex flex-col items-center gap-6">
             <div className="grid grid-cols-3 gap-3">
                 {board.map((cell, index) => (
                     <button
                         key={index}
                         onClick={() => handleClick(index)}
                         disabled={!!cell || !!winner || !isXNext}
-                        className={`w - 20 h - 20 rounded - xl text - 4xl font - bold flex items - center justify - center transition - all ${cell === 'X' ? 'bg-primary/20 text-primary border-2 border-primary' :
-                                cell === 'O' ? 'bg-secondary/20 text-secondary border-2 border-secondary' :
-                                    'bg-white/5 hover:bg-white/10 border border-white/10'
-                            } `}
+                        className={`w-20 h-20 rounded-xl text-4xl font-bold flex items-center justify-center transition-all ${cell === 'X' ? 'bg-primary/20 text-primary border-2 border-primary' :
+                            cell === 'O' ? 'bg-secondary/20 text-secondary border-2 border-secondary' :
+                                'bg-white/5 hover:bg-white/10 border border-white/10'
+                            }`}
                     >
                         {cell}
                     </button>
@@ -92,7 +78,7 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ onBack }) => {
             {winner && (
                 <div className="text-center animate-in fade-in slide-in-from-bottom-4">
                     <div className="text-xl font-bold text-white mb-2">
-                        {winner === 'Draw' ? "It's a Draw! 🤝" : `${winner === 'X' ? 'You Won! 🎉' : 'AI Won! 🤖'} `}
+                        {winner === 'Draw' ? "It's a Draw! 🤝" : `${winner === 'X' ? 'You Won! 🎉' : 'AI Won! 🤖'}`}
                     </div>
                     <button
                         onClick={resetGame}
