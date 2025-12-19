@@ -3,11 +3,12 @@ import { motion } from 'framer-motion';
 import type { Message } from '../types';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { User } from 'lucide-react';
+import { User, Download } from 'lucide-react';
 import botAvatar from '../assets/avatar.png';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import CodePreview from './CodePreview';
+import MusicCard from './MusicCard';
 
 interface ChatBubbleProps {
     message: Message;
@@ -15,6 +16,23 @@ interface ChatBubbleProps {
 
 const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
     const isBot = message.sender === 'bot';
+
+    const handleDownloadImage = async (url: string) => {
+        try {
+            const response = await fetch(url);
+            const blob = await response.blob();
+            const blobUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = `generated-image-${Date.now()}.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(blobUrl);
+        } catch (error) {
+            console.error('Download failed:', error);
+        }
+    };
 
     return (
         <motion.div
@@ -92,6 +110,33 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
                         <div className="absolute inset-0 rounded-2xl rounded-tl-none ring-1 ring-inset ring-white/10 pointer-events-none" />
                     )}
                 </div>
+
+                {/* Music Card */}
+                {message.musicData && (
+                    <div className="mt-2 w-full max-w-sm">
+                        <MusicCard data={message.musicData} />
+                    </div>
+                )}
+
+                {/* Generated Image */}
+                {message.imageUrl && (
+                    <div className="mt-2 w-full max-w-sm space-y-2">
+                        <div className="rounded-xl overflow-hidden border border-white/10 shadow-lg">
+                            <img
+                                src={message.imageUrl}
+                                alt="Generated"
+                                className="w-full h-auto object-cover"
+                                loading="lazy"
+                            />
+                        </div>
+                        <button
+                            onClick={() => handleDownloadImage(message.imageUrl!)}
+                            className="flex items-center justify-center gap-2 w-full py-2 bg-indigo-600/20 hover:bg-indigo-600/40 border border-indigo-500/30 text-indigo-300 hover:text-white rounded-lg transition-all text-xs font-medium"
+                        >
+                            <Download className="w-4 h-4" /> Download Image
+                        </button>
+                    </div>
+                )}
             </div>
         </motion.div>
     );
