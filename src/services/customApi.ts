@@ -1,69 +1,64 @@
-const SYSTEM_PROMPT = "Kamu adalah AI bernama Edwin_Chtr's, asisten virtual yang cerdas, ramah, dan bergaya futuristik. Kamu suka menggunakan emoji ✨🌌. Kamu selalu membantu pengguna dengan sopan namun santai.";
-
+// API Communication using Gemini (Better AI Quality)
 interface ApiResponse {
     success: boolean;
-    result: string;
-    session?: string;
+    result?: string;
+    error?: string;
 }
 
-export const sendMessageToBot = async (content: string, systemPrompt: string = SYSTEM_PROMPT): Promise<string> => {
+export const sendMessageToBot = async (
+    content: string,
+    systemPrompt: string = ""
+): Promise<string> => {
     try {
-        // Combine system prompt with user content
-        const fullText = systemPrompt + "\n\nUser: " + content;
+        // Combine system prompt and user message
+        const fullMessage = systemPrompt
+            ? `${systemPrompt}\n\nUser: ${content}`
+            : content;
 
-        // Check if we need to use POST (for very long content like file attachments)
-        const shouldUsePost = fullText.length > 1800;
+        // Use Gemini API (smarter responses)
+        const params = new URLSearchParams({
+            text: fullMessage,
+            prompt: 'helpful AI assistant' // Optional: customize personality
+        });
 
-        if (shouldUsePost) {
-            // Try POST method for long content
-            try {
-                const response = await fetch('https://api.ryzumi.vip/api/ai/v2/chatgpt', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        text: fullText
-                    })
-                });
+        const apiUrl = `https://api.ryzumi.vip/api/ai/gemini?${params.toString()}`;
 
-                if (response.ok) {
-                    const data: ApiResponse = await response.json();
-                    if (data.success && data.result) {
-                        return data.result;
-                    }
-                }
-                // If POST fails, fall back to GET with truncated content
-            } catch (postError) {
-                console.warn("POST failed, falling back to GET:", postError);
+        console.log('🤖 [API] Calling Gemini API...');
+
+        const response = await fetch(apiUrl, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json'
             }
-        }
-
-        // Use GET method (default or fallback)
-        // Truncate if too long to avoid URL issues
-        const truncatedText = fullText.length > 1800
-            ? fullText.substring(0, 1800) + "...[truncated]"
-            : fullText;
-
-        const encodedText = encodeURIComponent(truncatedText);
-        const url = `https://api.ryzumi.vip/api/ai/v2/chatgpt?text=${encodedText}`;
-
-        const response = await fetch(url);
+        });
 
         if (!response.ok) {
-            throw new Error(`API error: ${response.status}`);
+            throw new Error(`HTTP Error: ${response.status}`);
         }
 
         const data: ApiResponse = await response.json();
 
         if (data.success && data.result) {
+            console.log('🤖 [API] Gemini response received');
             return data.result;
         } else {
-            return "Maaf, aku tidak bisa memproses itu.";
+            throw new Error(data.error || 'No result from API');
         }
 
     } catch (error: any) {
-        console.error("Error calling Ryzumi API:", error);
+        console.error('🤖 [API] Gemini Error:', error);
+
+        // Retry with basic endpoint if main fails
+        try {
+            const simpleUrl = `https://api.ryzumi.vip/api/ai/gemini?text=${encodeURIComponent(content)}`;
+            const retryResponse = await fetch(simpleUrl);
+            if (!retryResponse.ok) throw new Error("Retry failed");
+            const data: ApiResponse = await retryResponse.json();
+            if (data.success && data.result) return data.result;
+        } catch (retryError) {
+            console.error("Retry also failed:", retryError);
+        }
+
         throw new Error(error.message || "Gagal terhubung ke AI.");
     }
 };

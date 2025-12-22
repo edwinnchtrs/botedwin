@@ -37,32 +37,80 @@ async function initAI() {
 
 initAI();
 
+const voiceCache = new Map(); // Cache voice IDs
+
+app.post('/api/tts', async (req, res) => {
+    try {
+        const { text, characterId = CHARACTER_ID } = req.body;
+        console.log(`TTS Request for: ${characterId}`);
+
+        if (!characterAI.isAuthenticated()) {
+            await initAI();
+        }
+
+        // 1. Get Voice ID (Cache it to avoid repeated fetches)
+        let voiceId = voiceCache.get(characterId);
+
+        if (!voiceId) {
+            console.log("Fetching character info for voice ID...");
+            const charInfo = await characterAI.fetchCharacterInfo(characterId);
+            // Try different possible properties for voice ID
+            voiceId = charInfo.voiceId || charInfo.voice_uuid || "";
+
+            if (!voiceId) {
+                console.warn("No voice ID found for this character. Trying default search...");
+                // Fallback or error? For now, let's error if no voice.
+                // Or maybe the library handles null voiceId as default?
+            } else {
+                voiceCache.set(characterId, voiceId);
+                console.log(`Found Voice ID: ${voiceId}`);
+            }
+        }
+
+        // 2. Fetch TTS
+        // The library returns a ReadableStream or buffer? 
+        // Based on docs/common usage, fetchTTS returns a URL or buffer.
+        // Let's assume the library's fetchTTS returns the audio buffer directly or a path.
+        // Actually, node_characterai fetchTTS returns: Promise<Buffer> usually.
+
+        if (!voiceId) {
+            return res.status(400).json({ error: "Character has no voice assigned." });
+        }
+
+        const audioPathOrBuffer = await characterAI.fetchTTS(voiceId, text);
+
+        // If it returns a buffer, send it.
+        // If it returns a path (some versions save file), we need to read it.
+        // Let's assume buffer for now as it's cleaner.
+
+        res.set('Content-Type', 'audio/mpeg');
+        res.send(audioPathOrBuffer);
+
+    } catch (error) {
+        console.error("TTS Error:", error);
+        res.status(500).json({ error: "TTS Failed", details: error.message });
+    }
+});
+
 app.post('/api/chat', async (req, res) => {
     try {
         const { message, characterId = CHARACTER_ID } = req.body;
 
         if (!characterAI.isAuthenticated()) {
-            // Try to re-authenticate or fail
             await initAI();
         }
 
-        // Simple single-user persistence for demo purposes
-        // In a real app, you'd track session IDs from the client
         let chat = chats.get(characterId);
 
         if (!chat) {
-            console.log(`Creating new chat for character: ${characterId}`);
             chat = await characterAI.createOrContinueChat(characterId);
             chats.set(characterId, chat);
         }
 
-        console.log(`Sending message to bot: ${message}`);
         const response = await chat.sendAndAwaitResponse(message, true);
 
-        console.log(`Received response: ${response.text}`);
         res.json({
             text: response.text,
-            // Include other metadata if available/needed
         });
 
     } catch (error) {

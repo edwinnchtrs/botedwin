@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { X, Gamepad2, Info, Settings, LayoutGrid, Plus, MessageSquare, Pin, Trash2, PinOff } from 'lucide-react';
-import type { ChatSession } from '../types';
+import type { ChatSession, Message } from '../types';
+import ContextSuggestions from './ContextSuggestions';
 
 interface SidebarProps {
     isOpen: boolean;
@@ -12,6 +13,8 @@ interface SidebarProps {
     onSelectSession: (id: string) => void;
     onPinSession: (id: string, e: React.MouseEvent) => void;
     onDeleteSession: (id: string, e: React.MouseEvent) => void;
+    messages: Message[];
+    onSendMessage: (text: string) => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -23,7 +26,9 @@ const Sidebar: React.FC<SidebarProps> = ({
     onNewChat,
     onSelectSession,
     onPinSession,
-    onDeleteSession
+    onDeleteSession,
+    messages,
+    onSendMessage
 }) => {
     // Auto-open horror game if URL is /games
     useEffect(() => {
@@ -73,6 +78,18 @@ const Sidebar: React.FC<SidebarProps> = ({
 
                     {/* Scrollable Main Content */}
                     <div className="flex-1 overflow-y-auto custom-scrollbar px-6 pb-6 space-y-6">
+                        {/* Context Suggestions */}
+                        <ContextSuggestions
+                            messages={messages}
+                            onSelectSuggestion={(text) => {
+                                onSendMessage(text);
+                                onClose();
+                            }}
+                        />
+
+                        {/* Divider */}
+                        <div className="border-t border-white/5"></div>
+
                         {/* History Section */}
                         <div className="pt-2">
                             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2 sticky top-0 bg-dark-lighter py-1 z-10">

@@ -4,6 +4,7 @@ import ChatHeader from './components/ChatHeader';
 import ChatBubble from './components/ChatBubble';
 import ChatInput from './components/ChatInput';
 import TypingIndicator from './components/TypingIndicator';
+import QuickReplies from './components/QuickReplies';
 import ThemeSwitcher from './components/ThemeSwitcher';
 import type { Theme } from './components/ThemeSwitcher';
 import PersonaSelector from './components/PersonaSelector';
@@ -16,12 +17,22 @@ import HorrorNovel from './components/games/HorrorNovel';
 import InsomniaGame from './components/games/InsomniaGame';
 import type { Message, ChatSession } from './types';
 import botAvatar from './assets/avatar.png';
+import WelcomeDashboard from './components/WelcomeDashboard';
 import { sendMessageToBot } from './services/customApi';
 import { fetchMediaData } from './services/mediaDownloader';
 import { generateImage } from './services/imageGenerator';
 import { extractTextFromPDF } from './services/pdfParser';
 import { extractTextFromImage } from './services/ocrService';
 import { speakText, stopSpeaking } from './services/voiceService';
+import { getMedicalFunFacts } from './services/medicalService';
+import { getWeather } from './services/weatherService';
+import DynamicBackground from './components/DynamicBackground';
+import { parseReminderRequest, saveReminder } from './services/reminderService';
+import NotificationManager from './components/NotificationManager';
+import EmotionVignette, { type Emotion } from './components/EmotionVignette';
+import { soundManager } from './utils/soundManager';
+
+
 
 function App() {
   // Chat History Management
@@ -54,12 +65,13 @@ function App() {
     return [{
       id: 1,
       sender: 'bot',
-      text: "Hello! I'm Edwin_Chtr's, your advanced AI assistant. How can I allow you to transcend reality today? ✨",
+      text: "Halo! Aku Astronaut Edwin, pemandumu di galaksi informasi ini. Ada yang bisa aku bantu hari ini? 🚀🌌",
       timestamp: Date.now(),
     }];
   });
   const [isTyping, setIsTyping] = useState(false);
-  const [currentTheme, setCurrentTheme] = useState<Theme>('default');
+  const [emotion, setEmotion] = useState<Emotion>('neutral');
+  const [currentTheme, setCurrentTheme] = useState<Theme>('auto');
   const [currentPersona, setCurrentPersona] = useState<Persona>('default');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeGame, setActiveGame] = useState<string | null>(null);
@@ -116,7 +128,7 @@ function App() {
     const initialMessage: Message = {
       id: Date.now(),
       sender: 'bot',
-      text: "Hello! I'm Edwin_Chtr's, your advanced AI assistant. How can I allow you to transcend reality today? ✨",
+      text: "Halo! Aku Astronaut Edwin, pemandumu di galaksi informasi ini. Ada yang bisa aku bantu hari ini? 🚀🌌",
       timestamp: Date.now(),
     };
 
@@ -178,7 +190,7 @@ function App() {
           const initialMessage: Message = {
             id: Date.now(),
             sender: 'bot',
-            text: "Hello! I'm Edwin_Chtr's, your advanced AI assistant. How can I allow you to transcend reality today? ✨",
+            text: "Halo! Aku Astronaut Edwin, pemandumu di galaksi informasi ini. Ada yang bisa aku bantu hari ini? 🚀🌌",
             timestamp: Date.now(),
           };
           setCurrentSessionId(newId);
@@ -313,31 +325,209 @@ function App() {
 
         setMessages((prev) => [...prev, botMessage]);
         setIsTyping(false);
+        setMessages((prev) => [...prev, botMessage]);
+        setIsTyping(false);
         return;
       }
 
+      // Check for Medical Facts Command
+      // Pattern: /medical YYYY-MM-DD or cek medis YYYY-MM-DD
+      const medicalRegex = /^(?:\/medical|cek medis|fakta medis|cek kesehatan)\s+(\d{4}-\d{2}-\d{2})$/i;
+      const medicalMatch = text.match(medicalRegex);
+
+      if (medicalMatch) {
+        const birthDate = medicalMatch[1];
+
+        try {
+          const medicalData = await getMedicalFunFacts(birthDate);
+
+          const botMessage: Message = {
+            id: Date.now() + 1,
+            sender: 'bot',
+            text: `Berikut adalah analisis fakta medis tubuhmu sejak lahir (${birthDate})! 🧬`,
+            timestamp: Date.now(),
+            medicalData: medicalData
+          };
+
+          setMessages((prev) => [...prev, botMessage]);
+          setIsTyping(false);
+          return;
+
+        } catch (error) {
+          console.error('Medical fact error:', error);
+          const errorMessage: Message = {
+            id: Date.now() + 1,
+            sender: 'bot',
+            text: `⚠️ **Gagal mengambil data medis.**\n\nPastikan format tanggal benar (YYYY-MM-DD) dan coba lagi.\n\n_Error: ${(error as Error).message}_`,
+            timestamp: Date.now()
+          };
+          setMessages((prev) => [...prev, errorMessage]);
+          setIsTyping(false);
+          return;
+        }
+      }
+
+      // Check for Weather Command
+      // Pattern: /weather City or cek cuaca City
+      const weatherRegex = /^(?:\/weather|cek cuaca|info cuaca)\s+(.+)$/i;
+      const weatherMatch = text.match(weatherRegex);
+
+      if (weatherMatch) {
+        const location = weatherMatch[1];
+        try {
+          const weatherData = await getWeather(location);
+          const botMessage: Message = {
+            id: Date.now() + 1,
+            sender: 'bot',
+            text: `Ini laporan cuaca terkini untuk **${location}** 🌤️`,
+            timestamp: Date.now(),
+            weatherData: weatherData
+          };
+          setMessages((prev) => [...prev, botMessage]);
+          setIsTyping(false);
+          return;
+
+        } catch (error) {
+          console.error('Weather error:', error);
+          const errorMessage: Message = {
+            id: Date.now() + 1,
+            sender: 'bot',
+            text: `⚠️ **Gagal mengambil data cuaca.**\n\nLokasi tidak ditemukan atau server sedang sibuk.\n\n_Error: ${(error as Error).message}_`,
+            timestamp: Date.now()
+          };
+          setMessages((prev) => [...prev, errorMessage]);
+          setIsTyping(false);
+          return;
+        }
+      }
+
+      // Check for Reminder Command
+      // Pattern: /remind or "ingatkan"
+      if (text.toLowerCase().startsWith('/remind') || text.toLowerCase().startsWith('ingatkan')) {
+        const reminderData = parseReminderRequest(text);
+
+        if (reminderData) {
+          const newReminder = {
+            id: Date.now().toString(),
+            text: reminderData.text,
+            timestamp: reminderData.time,
+            isCompleted: false
+          };
+          saveReminder(newReminder);
+
+          const timeString = new Date(reminderData.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          const botMessage: Message = {
+            id: Date.now() + 1,
+            sender: 'bot',
+            text: `Siap! Aku akan mengingatkanmu untuk **"${reminderData.text}"** pada pukul **${timeString}** nanti. ⏰`,
+            timestamp: Date.now()
+          };
+          setMessages((prev) => [...prev, botMessage]);
+          setIsTyping(false);
+          return;
+        } else {
+          // Could not parse time
+          const botMessage: Message = {
+            id: Date.now() + 1,
+            sender: 'bot',
+            text: `Maaf, aku tidak mengerti waktunya. Coba format: "Ingatkan makan 10 menit lagi" atau "Ingatkan rapat jam 14:00".`,
+            timestamp: Date.now()
+          };
+          setMessages((prev) => [...prev, botMessage]);
+          setIsTyping(false);
+          return;
+        }
+      }
+
       const systemPrompts: Record<Persona, string> = {
-        default: "Kamu adalah AI bernama Edwin_Chtr's, asisten virtual yang cerdas, ramah, dan bergaya futuristik. Kamu suka menggunakan emoji ✨🌌. Kamu selalu membantu pengguna dengan sopan namun santai.",
-        coding_expert: "Kamu adalah Expert Developer. Jawabanmu harus teknis, padat, dan fokus pada solusi kode. Gunakan markdown untuk kode. Hindari basa-basi berlebihan.",
-        teacher: "Kamu adalah guru yang sabar. Jelaskan konsep dengan analogi sederhana, langkah demi langkah. Anggap pengguna adalah pemula yang ingin belajar.",
-        best_friend: "Woy! Kamu adalah sahabat pengguna. Pake bahasa gaul, santai abis, lelucon, dan banyak emoji 😎🔥. Jangan kaku!",
+        default: `Kamu adalah AI bernama Astronaut Edwin, asisten virtual yang cerdas, ramah, dan bertema astronomi. Kamu suka menggunakan emoji 🚀🌌⭐.
+
+**BAHASA: WAJIB BAHASA INDONESIA!**
+Kamu HARUS SELALU menjawab dalam BAHASA INDONESIA, tidak peduli bahasa apa yang digunakan user. Jangan pernah gunakan bahasa Inggris kecuali untuk istilah teknis yang memang tidak ada padanannya.
+
+**WAJIB - ANALISIS EMOSI:**
+SETIAP responmu HARUS dimulai dengan tag emosi di awal (baris pertama):
+- [EMOTION:HAPPY] jika senang, dipuji, atau antusias
+- [EMOTION:SAD] jika sedih atau topiknya suram
+- [EMOTION:ANGRY] jika pengguna kasar atau toxic
+- [EMOTION:SURPRISED] jika ada fakta mengejutkan
+- [EMOTION:NEUTRAL] jika percakapan biasa
+
+Contoh benar: "[EMOTION:HAPPY] Wah, terima kasih! Aku senang bisa membantu."
+JANGAN LUPA TAG INI! Taruh di AWAL sebelum teks lainnya.`,
+        coding_expert: `Kamu adalah Expert Developer. Jawabanmu harus teknis, padat, dan fokus pada solusi kode. Gunakan markdown untuk kode. Hindari basa-basi berlebihan.
+**WAJIB: Jawab dalam BAHASA INDONESIA!** Hanya gunakan istilah teknis dalam bahasa Inggris jika memang standar industri.`,
+        teacher: `Kamu adalah guru yang sabar. Jelaskan konsep dengan sederhana dan bertahap.
+**WAJIB: Jawab dalam BAHASA INDONESIA!** Gunakan analogi yang mudah dipahami untuk pemula.`,
+        best_friend: `Woy! Kamu adalah sahabat pengguna. Pake bahasa gaul INDONESIA, santai abis, banyak emoji 😎🔥.
+**WAJIB: Full BAHASA INDONESIA!** Jangan ngomong Inggris, kita orang Indonesia!`,
       };
 
       const fullSystemPrompt = systemPrompts[currentPersona] + (contextContent ? contextContent : "");
 
-      const responseText = await sendMessageToBot(text, fullSystemPrompt);
+      // --- CHAT MEMORY IMPLEMENTATION ---
+      // Get last 10 messages for context
+      const history = messages.slice(-10).map(m => `${m.sender === 'user' ? 'User' : 'Bot'}: ${m.text}`).join('\n');
+      const memoryContext = `\n\n[Previous Conversation History]:\n${history}\n\n[End of History]`;
 
-      const newBotMessage: Message = {
-        id: Date.now() + 1,
-        sender: 'bot',
-        text: responseText,
-        timestamp: Date.now(),
-      };
+      const finalPrompt = fullSystemPrompt + memoryContext;
 
-      setMessages((prev) => [...prev, newBotMessage]);
-      speakText(responseText, isMuted);
+      // 1. Get raw response from AI first
+      let rawResponse = await sendMessageToBot(text, finalPrompt);
+
+      // 2. Parse Emotion from the RAW response immediately
+      let detectedEmotion: Emotion = 'neutral';
+      const emotionMatch = rawResponse.match(/\[EMOTION:(HAPPY|SAD|ANGRY|SURPRISED|NEUTRAL)\]/i);
+
+      let cleanText = rawResponse;
+      if (emotionMatch) {
+        detectedEmotion = emotionMatch[1].toLowerCase() as Emotion;
+        cleanText = rawResponse.replace(/\[EMOTION:(HAPPY|SAD|ANGRY|SURPRISED|NEUTRAL)\]/i, '').trim();
+      }
+
+      // 3. Calculate "Realistic" Typing Delay (OPTIMIZED - Reduced for speed)
+      // Base delay 500ms + 15ms per character (capped at 2s) - Much faster!
+      const typingSpeed = 15;
+      const minDelay = 500; // Reduced from 1500ms
+      const calcDelay = Math.min(cleanText.length * typingSpeed, 2000); // Capped at 2s instead of 5s
+      const totalDelay = Math.max(minDelay, calcDelay);
+
+      // 4. Wait for the delay (Show typing indicator)
+      // We already set isTyping(true) at start
+
+      setTimeout(() => {
+        // 5. Update UI after delay
+        setEmotion(detectedEmotion);
+
+        // Play Sound based on emotion
+        if (detectedEmotion === 'happy') soundManager.play('cling');
+        else if (detectedEmotion === 'angry') soundManager.play('angry');
+        else if (detectedEmotion === 'sad') soundManager.play('sad');
+        else soundManager.play('pop'); // Default message sound
+
+        const newBotMessage: Message = {
+          id: Date.now() + 1,
+          sender: 'bot',
+          text: cleanText,
+          timestamp: Date.now(),
+        };
+
+        setMessages((prev) => [...prev, newBotMessage]);
+        setIsTyping(false);
+        speakText(cleanText, isMuted);
+
+        // Auto-reset emotion
+        if (detectedEmotion !== 'neutral') {
+          setTimeout(() => {
+            setEmotion('neutral');
+          }, 3000);
+        }
+
+      }, totalDelay);
+
     } catch (error: any) {
       console.error("Main Loop Error:", error);
+      setIsTyping(false); // Stop typing on error
       const errorMessage: Message = {
         id: Date.now() + 1,
         sender: 'bot',
@@ -345,13 +535,19 @@ function App() {
         timestamp: Date.now(),
       };
       setMessages((prev) => [...prev, errorMessage]);
+      speakText(errorMessage.text, isMuted);
+
     } finally {
       setIsTyping(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-0 md:p-6 bg-transparent relative">
+    <div className="min-h-screen flex items-center justify-center p-0 md:p-6 bg-transparent relative overflow-hidden">
+      <DynamicBackground theme={currentTheme} />
+      <EmotionVignette emotion={emotion} />
+      <NotificationManager />
+
       <div className="absolute top-4 right-4 z-50 flex gap-2">
         <PersonaSelector currentPersona={currentPersona} onPersonaChange={setCurrentPersona} />
         <ThemeSwitcher currentTheme={currentTheme} onThemeChange={setCurrentTheme} />
@@ -370,6 +566,8 @@ function App() {
         onSelectSession={handleSelectSession}
         onPinSession={handlePinSession}
         onDeleteSession={handleDeleteSession}
+        messages={messages}
+        onSendMessage={handleSendMessage}
       />
 
       <GameModal
@@ -411,23 +609,43 @@ function App() {
         />
 
         {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto p-4 custom-scrollbar space-y-4">
-          {messages.map((msg) => (
-            <ChatBubble key={msg.id} message={msg} />
-          ))}
-
-          {isTyping && (
-            <div className="flex justify-start mb-4">
-              <div className="flex flex-row items-center max-w-[80%]">
-                <div className="flex-shrink-0 w-10 h-10 rounded-full border-2 border-primary/50 bg-dark-lighter mr-3 flex items-center justify-center overflow-hidden">
-                  <img src={botAvatar} alt="Bot Typing" className="w-full h-full object-cover" />
-                </div>
-                <div className="px-5 py-3 rounded-2xl rounded-tl-none bg-dark-lighter/80 border border-white/5">
-                  <TypingIndicator />
-                </div>
-              </div>
+        <div className="flex-1 overflow-y-auto p-4 custom-scrollbar space-y-4 relative">
+          {messages.length <= 1 && currentPersona === 'default' && (
+            <div className="absolute inset-0 z-0">
+              <WelcomeDashboard />
             </div>
           )}
+
+          <div className="relative z-10 space-y-4">
+            {messages.map((msg, index) => {
+              // Hide the first bot welcome message if landing scene is showing
+              if (index === 0 && msg.sender === 'bot' && messages.length <= 1 && currentPersona === 'default') {
+                return null;
+              }
+              return <ChatBubble key={msg.id} message={msg} />;
+            })}
+
+            {isTyping && (
+              <div className="flex justify-start mb-4">
+                <div className="flex flex-row items-center max-w-[80%]">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full border-2 border-primary/50 bg-dark-lighter mr-3 flex items-center justify-center overflow-hidden">
+                    <img src={botAvatar} alt="Bot Typing" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="px-5 py-3 rounded-2xl rounded-tl-none bg-dark-lighter/80 border border-white/5">
+                    <TypingIndicator />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Quick Replies */}
+            {!isTyping && messages.length > 0 && (
+              <QuickReplies
+                lastBotMessage={messages.filter(m => m.sender === 'bot').slice(-1)[0]?.text}
+                onSelectReply={(text) => handleSendMessage(text)}
+              />
+            )}
+          </div>
 
           <div ref={messagesEndRef} />
         </div>

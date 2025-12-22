@@ -1,4 +1,6 @@
 import type { MediaData } from '../services/mediaDownloader';
+import type { MedicalStats } from './medical';
+import type { WeatherData } from './weather';
 
 export type Message = {
     id: number;
@@ -13,6 +15,8 @@ export type Message = {
         url: string;
     };
     mediaData?: MediaData; // Enhanced media with multi-quality downloads
+    medicalData?: MedicalStats;
+    weatherData?: WeatherData;
     imageUrl?: string;
 };
 

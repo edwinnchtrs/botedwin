@@ -122,7 +122,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, isLoading }) => {
                     onChange={(e) => setInput(e.target.value)}
                     placeholder={selectedFile ? "Ask about this file..." : "Type your message..."}
                     disabled={isLoading}
-                    className="w-full bg-dark/50 border border-white/10 rounded-xl pl-4 pr-12 py-3 focus:outline-none focus:ring-2 focus:ring-primary/50 text-white placeholder-gray-400 transition-all"
+                    className="w-full bg-black/30 border border-white/10 rounded-xl pl-4 pr-12 py-3 focus:outline-none focus:ring-2 focus:ring-primary/50 text-white placeholder-gray-400 transition-all"
                 />
 
                 <motion.button

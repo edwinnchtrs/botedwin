@@ -62,6 +62,66 @@
   --bg-gradient-3: #064e3b;
 }
 
+.theme-astronomy {
+  --color-primary: #93c5fd;
+  /* Soft Blue */
+  --color-secondary: #c084fc;
+  /* Soft Purple */
+  --color-accent: #fde047;
+  /* Yellow Star */
+  --color-dark: #0f172a;
+  --color-dark-lighter: #1e293b;
+  --bg-gradient-1: #020617;
+  --bg-gradient-2: #1e1b4b;
+  --bg-gradient-3: #4c1d95;
+}
+
+.theme-yinyang {
+  --color-primary: #111827;
+  /* Dark Gray */
+  --color-secondary: #f3f4f6;
+  /* White */
+  --color-accent: #9ca3af;
+  /* Gray */
+  --color-dark: #e5e7eb;
+  /* Light Gray Background */
+  --color-dark-lighter: #ffffff;
+  --bg-gradient-1: #ffffff;
+  --bg-gradient-2: #e5e7eb;
+  --bg-gradient-3: #d1d5db;
+  color-scheme: light;
+}
+
+.theme-blackhole {
+  --color-primary: #ea580c;
+  /* Intense Orange */
+  --color-secondary: #7c3aed;
+  /* Deep Purple */
+  --color-accent: #fcd34d;
+  /* Yellow Accretion */
+  --color-dark: #000000;
+  /* Absolute Black */
+  --color-dark-lighter: #0f0f0f;
+  --bg-gradient-1: #000000;
+  --bg-gradient-2: #000000;
+  --bg-gradient-3: #1a0526;
+}
+
+.theme-mountain {
+  --color-primary: #10b981;
+  /* Emerald */
+  --color-secondary: #0ea5e9;
+  /* Sky Blue */
+  --color-accent: #fef08a;
+  /* Sun */
+  --color-dark: #0f172a;
+  /* Slate */
+  --color-dark-lighter: #1e293b;
+  --bg-gradient-1: #0f172a;
+  --bg-gradient-2: #1e293b;
+  --bg-gradient-3: #334155;
+}
+
 body {
   margin: 0;
   min-width: 320px;
@@ -109,6 +169,125 @@ body {
 
 .text-glow {
   text-shadow: 0 0 10px rgba(217, 70, 239, 0.7);
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(-20px) rotate(2deg);
+  }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+.animate-float-slow {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float 5s ease-in-out 1s infinite;
+}
+
+@keyframes twinkle {
+
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+.star {
+  position: absolute;
+  background: white;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: twinkle var(--duration, 3s) infinite ease-in-out;
+}
+
+@keyframes shoot {
+  0% {
+    transform: translateX(0) translateY(0) rotate(-45deg);
+    opacity: 1;
+    width: 0px;
+  }
+
+  70% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateX(-1000px) translateY(1000px) rotate(-45deg);
+    opacity: 0;
+    width: 200px;
+  }
+}
+
+.shooting-star {
+  position: absolute;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0));
+  filter: drop-shadow(0 0 5px white);
+  animation: shoot var(--duration, 5s) linear infinite;
+  animation-delay: var(--delay, 0s);
+  z-index: 5;
+}
+
+@keyframes asteroid-fall {
+  0% {
+    transform: translate(50vw, -10vh) rotate(0deg) scale(0.5);
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  90% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate(-10vw, 110vh) rotate(360deg) scale(1.2);
+    opacity: 0;
+  }
+}
+
+.asteroid {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  background: #3f3f46;
+  border-radius: 40% 60% 50% 50% / 50% 40% 60% 50%;
+  box-shadow: inset -5px -5px 10px rgba(0, 0, 0, 0.5), 0 0 20px rgba(251, 191, 36, 0.4);
+  animation: asteroid-fall var(--duration, 8s) linear infinite;
+  animation-delay: var(--delay, 0s);
+  z-index: 4;
+}
+
+.asteroid::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 150%;
+  height: 4px;
+  background: linear-gradient(90deg, #fbbf24, transparent);
+  transform: translateY(-50%) rotate(-45deg);
+  filter: blur(2px);
+  opacity: 0.6;
 }
 
 /* Horror Game Intense Visual Effects */

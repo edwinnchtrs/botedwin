@@ -1,7 +1,7 @@
 import React from 'react';
 import { Palette } from 'lucide-react';
 
-export type Theme = 'default' | 'cyberpunk' | 'pastel' | 'matrix';
+export type Theme = 'auto' | 'default' | 'yinyang' | 'blackhole' | 'mountain' | 'cyberpunk' | 'pastel' | 'matrix';
 
 interface ThemeSwitcherProps {
     currentTheme: Theme;
@@ -12,7 +12,11 @@ const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({ currentTheme, onThemeChan
     const [isOpen, setIsOpen] = React.useState(false);
 
     const themes: { id: Theme; name: string; color: string }[] = [
-        { id: 'default', name: 'Midnight', color: '#d946ef' },
+        { id: 'auto', name: 'Auto (Live)', color: 'linear-gradient(to right, #60a5fa, #f59e0b)' },
+        { id: 'default', name: 'Midnight (Space)', color: '#d946ef' },
+        { id: 'yinyang', name: 'Yin Yang (Harmony)', color: '#f3f4f6' },
+        { id: 'blackhole', name: 'Black Hole (Void)', color: '#ea580c' },
+        { id: 'mountain', name: 'Mountain (Nature)', color: '#10b981' },
         { id: 'cyberpunk', name: 'Cyberpunk', color: '#facc15' },
         { id: 'pastel', name: 'Pastel', color: '#f9a8d4' },
         { id: 'matrix', name: 'Matrix', color: '#22c55e' },

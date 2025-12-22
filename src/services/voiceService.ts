@@ -1,32 +1,78 @@
-// Text to Speech
-export const speakText = (text: string, isMuted: boolean = false) => {
-    if (isMuted || !window.speechSynthesis) return;
+// Text to Speech - Instant Web Speech API (Google TTS - No delay)
+let currentUtterance: SpeechSynthesisUtterance | null = null;
 
-    // Cancel current speech
-    window.speechSynthesis.cancel();
+export const speakText = async (text: string, isMuted: boolean = false) => {
+    // Stop any current speech
+    stopSpeaking();
 
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'id-ID'; // Indonesian
-    utterance.rate = 1;
-    utterance.pitch = 1;
+    if (isMuted || !text || text.trim().length === 0) {
+        return;
+    }
 
-    // Fallback to English if ID voice not found (optional logic, but usually browser handles it)
-    // We can try to find a specific Google voice if available
-    const voices = window.speechSynthesis.getVoices();
-    const indonesianVoice = voices.find(v => v.lang === 'id-ID' || v.lang === 'ind');
-    if (indonesianVoice) utterance.voice = indonesianVoice;
+    if (!window.speechSynthesis) {
+        console.warn('🎤 [TTS] Speech synthesis not supported');
+        return;
+    }
 
-    window.speechSynthesis.speak(utterance);
+    try {
+        // Clean text (remove markdown, emojis, emotion tags)
+        const cleanText = text
+            .replace(/[#*_`~]/g, '') // Remove markdown
+            .replace(/[\u{1F600}-\u{1F64F}]/gu, '') // Remove emojis
+            .replace(/[\u{1F300}-\u{1F5FF}]/gu, '')
+            .replace(/[\u{1F680}-\u{1F6FF}]/gu, '')
+            .replace(/[\u{1F1E0}-\u{1F1FF}]/gu, '')
+            .replace(/\[EMOTION:\w+\]/gi, '') // Remove emotion tags
+            .trim();
+
+        if (cleanText.length === 0) return;
+
+        currentUtterance = new SpeechSynthesisUtterance(cleanText);
+
+        // Configure for Indonesian
+        currentUtterance.lang = 'id-ID';
+        currentUtterance.rate = 1.0;
+        currentUtterance.pitch = 1.0;
+        currentUtterance.volume = 0.9;
+
+        // Try to get Indonesian voice
+        const voices = window.speechSynthesis.getVoices();
+        const indonesianVoice = voices.find(v =>
+            v.lang.includes('id') || v.lang.includes('ID')
+        );
+
+        if (indonesianVoice) {
+            currentUtterance.voice = indonesianVoice;
+        }
+
+        currentUtterance.onend = () => {
+            currentUtterance = null;
+            console.log('🎤 [TTS] Speech ended');
+        };
+
+        currentUtterance.onerror = (e) => {
+            console.error('🎤 [TTS] Speech error:', e);
+            currentUtterance = null;
+        };
+
+        window.speechSynthesis.speak(currentUtterance);
+        console.log('🎤 [TTS] Playing instant Google TTS');
+
+    } catch (error) {
+        console.error('🎤 [TTS] Error:', error);
+    }
 };
 
 export const stopSpeaking = () => {
-    if (window.speechSynthesis) window.speechSynthesis.cancel();
+    if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+    }
+    if (currentUtterance) {
+        currentUtterance = null;
+    }
 };
 
-// Speech to Text (Simple implementation)
-// For React components, it's often better to use a Hook, but we can export a helper here
-// or just put the logic in the component. Let's create a class or helper.
-
+// ... keep SpeechRecognizer class if needed ...
 export class SpeechRecognizer {
     private recognition: any;
     private isListening: boolean = false;
